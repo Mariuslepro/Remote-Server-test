@@ -53,23 +53,50 @@ I-2 PCs's configuration
 ----------------------
   In order to communicate efficiently, one of the PC most be the server 
   and the other the client.
-  we will acivate the openSSHserver on one of the PC. Let say PC1.
+  we will activate the openSSHserver on one of the PC. Let say PC1.
   * Setting up PC1 as server
-    - Open PowerShell
-    - type the following commands
+    Follow these steps:
+
+        1. Check Windows Version
+    The OpenSSH Server feature is available starting from Windows 10
+    version 1809.
+    To check your version:
+    Press Win + R, type winver, and press Enter.
+    If your version is lower than 1809, you might need to update your
+    Windows.
+
+        2. Manually Install OpenSSH Server
+        Open PowerShell as Administrator:
+    Press Win + X and choose Windows PowerShell (Admin).
+    Install OpenSSH Server:
+    Run the following command to install the OpenSSH Server:
+
+    " Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0 "
+
+    Verify Installation:
+
+    " Get-WindowsCapability -Online | Where-Object Name -like
+    'OpenSSH.Server*' "
+
+    It should show the State as 'Installed'.
+
+        3. Start the OpenSSH Server
+        After installing, you need to start the OpenSSH server service:
+    Run this command in PowerShell to start the service:
+
+    " Start-Service sshd "
+
+        To make the service start automatically at boot:
+
+    " Set-Service -Name sshd -StartupType 'Automatic' "
 
 
-
-
-  ....
-
-
-At this level, the client can be conected to the server and must be able to 
+At this level, the client can be connected to the server and must be able to
 execute commands.
 The goal here is to SSH into the server, reboot it, then retrieve informations
  such as:
  - PCIE's numbers
- - PCIE'devices list
+ - PCIE's devices list
  - SmBios Type 16
  - SmBios Type 17
 then return these informations and possible bugs in a robotFramework's report file
