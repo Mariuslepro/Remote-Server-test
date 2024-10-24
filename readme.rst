@@ -107,71 +107,111 @@ Creating test libraries
 =======================
 
 .. code:: python
-    import datetime
-    import os
-    import subprocess
-    import re
     import paramiko_test
 
-class lspci_test_Library: 
-
-    def find_sentences_with_word2(file_path, word):
-        sentences_with_word = []
-
-        # Ouvrir le fichier en mode lecture
-        f = open(file_path, "r")
-        lines = f.read()
-        lines = lines.splitlines()
-        lines = filter(None, lines)
-        #print(lines)
-
-        for li in lines:
-            if str(li).startswith(word):
-                sentences_with_word.append(str(li).split(':'))
-        print("find sentences")
-        print(sentences_with_word)
-        print('find')
-        return sentences_with_word
-
-    def launch_lspci_paramiko(self):
 
 
-        lspci_output_file = r"C:\Users\Mariuslepro\PycharmProjects\ProjectVenv\Harold-test\lspci_output_file.txt"
-        command = r"Pnputil.exe /enum-drivers"
-        result = paramiko_test.connexion(command)
-        #result = subprocess.run(command, shell=True, capture_output=True, text=True)
-        print(result)
+class remote_command_library:
 
-        # Écrire la sortie dans le fichier
-        with open(lspci_output_file, 'w') as output_file:
-            output_file.write(result)
+    # takes server's parameters, to connect To the Server, Execute the Command and return
+    # result if needed in a string
+    def connecToServerExecuteCommand(self, hostname, port, username, password, command) -> str:
+        # Initialize the SSH client
+        ssh = paramiko.SSHClient()
 
-        output_file.close()
-        publisher_name = lspci_test_Library.find_sentences_with_word2(lspci_output_file, "Published")
-        return publisher_name
+        # Automatically add the remote server's SSH key (dangerous in production)
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+        try:
+            # Connect to the remote server
+            ssh.connect(hostname, port, username, password)
+            # Execute a command
+            stdin, stdout, stderr = ssh.exec_command(command)
+            result = stdout.read().decode()
+            # Print the command output
+            # print(stdout.read().decode())
+            # Print any error messages
+            #print(stderr.read().decode())
+
+        finally:
+            # Close the connection
+            ssh.close()
+
+        return result
+
+    # Working on windows pc
+
+    # Reboot a Windows server
+    def reboot_server_remotely(self, hostname, port, username, password):
+        command = r"shutdown /r /t 0"
+        remote_command_library.connecToServerExecuteCommand(self, hostname, port, username, password, command)
+
+    # Return the Network Interface Information on MWindows
+    def get_network_info2(self, hostname, port, username, password) -> str:
+        command = r"ipconfig"
+        result = remote_command_library.connecToServerExecuteCommand(self, hostname, port, username, password, command)
+        return result
+
+    def get_pcie_info2(self, hostname, port, username, password) -> str:
+
+        #Numbers of pcie's devvices
+        command2 = 'wmic path win32_pnpentity where "DeviceID like \'%PCI%\'" get Name,DeviceID | find /c /v ""'
+        result2 = "\n the number of PCIE is: " + remote_command_library.connecToServerExecuteCommand(self, hostname,
+                                                                                                     port, username,
+                                                                                                     password, command2)
+
+        # Get pcie,s devices info
+        #command = "wmic path win32_pnpentity get name, deviceid | findstr PCI "
+        command = 'wmic path win32_pnpentity where "DeviceID like \'%PCI%\'" get Name,DeviceID'
+        result = "\n List of PCI Equipments: \n" + remote_command_library.connecToServerExecuteCommand(self, hostname,
+                                                                                                       port, username,
+                                                                                                       password,
+                                                                                                       command)
+        return result2 + result
+
+    #Get the Smbios type16
+    def type16_smbios2(self, hostname, port, username, password) -> str:
+        # type 16
+        command = r"wmic memorychip get BankLabel, Capacity, DeviceLocator, MemoryType, TypeDetail, FormFactor, DataWidth, Status"
+        #command =r"wmic memorychip list full"
+        result = remote_command_library.connecToServerExecuteCommand(self, hostname, port, username, password, command)
+        return result
+
+    #Get the Smbios type17
+    def type17_smbios2(self, hostname, port, username, password) -> str:
+        # type 17
+        command = r"wmic memorychip get BankLabel, Capacity, DeviceLocator, Manufacturer, PartNumber, Speed, SerialNumber"
+        result = remote_command_library.connecToServerExecuteCommand(self, hostname, port, username, password, command)
+        return result
 
 
 .. code:: robotframework
     *** Settings ***
-    Library    lspci_test_Library.py
-    Library           Collections
-    Library    BuiltIn
+Library    remote_command_library.py
 
-    *** Variables ***
-    ${duration}    15
-    ${delay}    5
-    ${count}    ${duration}/${delay}
-    ${separator}    \n
+*** Variables ***
+ #Define the server's connection parameters
+ 
+ #Exemple:
+${hostname}    192.168.137.2
+${port}    ${22}
+${username}    serverusername
+${password}    motdepass
 
-    *** Test Cases ***
-        
-    Get Lspci
-        FOR    ${i}    IN RANGE    ${count}
-            ${list} =    Launch Lspci paramiko
-            #Log    ${list}
-            FOR  ${lix}  IN  @{list}
-                Log    ${lix}
-            END
 
-            Sleep  5s
-        END
+*** Test Cases ***
+
+Get Rebootserver
+
+    Reboot server remotely    ${hostname}    ${port}    ${username}    ${password}
+    sleep    60s
+    
+    ${result} =    type16 smbios2    ${hostname}    ${port}    ${username}    ${password}
+    Log    ${result}
+
+    ${result} =    type17 smbios2    ${hostname}    ${port}    ${username}    ${password}
+    Log    ${result}
+
+    ${result} =    Get pcie info2    ${hostname}    ${port}    ${username}    ${password}
+    Log    ${result}
+
