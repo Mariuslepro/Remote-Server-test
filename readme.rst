@@ -1,15 +1,13 @@
-readme
+Readme
+
 
 ============================================================================
-REMOTELY EXECUTE COMMAND ON A DISTANT PC AND GET THE ROBOTFRAMEWORK report
-============================================================================
-============================================================================
-REMOTELY CONNECT TO SERVER, RUN REBOOT STRESS THEN RETRIEVE INFORMATIONS 
-SUCH AS: PCIE DEVICES, SMBIOS TYPE 16, SMBIOS TYPE 17 AND GET THE 
+REMOTELY CONNECT TO SERVER, RUN REBOOT STRESS THEN RETRIEVE INFORMATIONS
+SUCH AS: PCIE DEVICES, SMBIOS TYPE 16, SMBIOS TYPE 17 AND GET THE
 ROBOTFRAMEWORK report
 ============================================================================
 
-Tools: robotframework; Pycharm; PowerShell; Python; Windows; MacOS 
+Tools: robotframework; Pycharm; PowerShell; Python; Windows
 
 
     The test will have 3 steps: the creation and configuration of the network,

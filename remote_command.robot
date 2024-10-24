@@ -1,4 +1,4 @@
-    *** Settings ***
+*** Settings ***
 Library    remote_command_library.py
 
 *** Variables ***
