@@ -1,31 +1,22 @@
-*** Settings ***
+    *** Settings ***
 Library    remote_command_library.py
 
 *** Variables ***
- #Define connection parameters
- #My MacOS parameters
-#${hostname}    192.168.137.3
-#${port}    ${22}
-#${username}    apple
-#${password}    12345
-
- #My windows parameters
-#${hostname}    192.168.137.2
-#${port}    ${22}
-#${username}    mariuslepro
-#${password}    mariuslepro
-
-${hostname}    127.0.0.1
+ #Define the server's connection parameters
+ 
+ #Exemple:
+${hostname}    192.168.137.2
 ${port}    ${22}
-${username}    mariuslepro
-${password}    mariuslepro
+${username}    serverusername
+${password}    motdepass
+
 
 *** Test Cases ***
 
 Get Rebootserver
 
-    #Reboot server remotely    ${hostname}    ${port}    ${username}    ${password}
-    #sleep    60s
+    Reboot server remotely    ${hostname}    ${port}    ${username}    ${password}
+    sleep    60s
     
     ${result} =    type16 smbios2    ${hostname}    ${port}    ${username}    ${password}
     Log    ${result}
